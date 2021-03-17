@@ -1,3 +1,10 @@
+---
+permalink: /contact/
+title: "Contact"
+excerpt: "Contact me"
+author_profile: true
+---
+
 Places around the web to contact me:
 
 - E-mail: alexanderballeman [at] gmail.com
