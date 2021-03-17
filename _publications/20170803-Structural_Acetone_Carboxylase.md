@@ -1,7 +1,7 @@
 ---
 title: "Structural basis for the mechanism of ATP-dependent acetone carboxylation"
 collection: publications
-permalink: /publication/20170803-Structural_Acetone_Carboxylase.md
+permalink: /publication/20170803-Structural_Acetone_Carboxylase
 excerpt: 'This paper was the report on the first structral data of acetone carboxylase'
 date: 2017-08-03
 venue: 'Scientific Reports'
