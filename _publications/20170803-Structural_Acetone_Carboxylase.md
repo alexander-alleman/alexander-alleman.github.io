@@ -12,4 +12,3 @@ This paper describes the crystal structures of acetone carboxylase found in thre
 
 [Download paper here](http://alexander-alleman.github.io/files/20170803-Structural_Acetone_Carboxylase.pdf)
 
-Recommended citation: Mus, F., Eilers, B.J., Alleman, A.B. <i>et al.</i> Structural Basis for the Mechanism of ATP-Dependent Acetone Carboxylation. Sci Rep 7, 7234 (2017). https://doi.org/10.1038/s41598-017-06973-8.
