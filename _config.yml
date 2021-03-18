@@ -7,7 +7,7 @@
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Alexander-Alleman"
+title                    : "Alexander Alleman"
 title_separator          : "-"
 name                     : &name "Alexander Alleman"
 description              : &description "Ph.D. candidate at Washington State University's Institute of Biological Chemistry working on the physiology of biological nitrogen fixation. "
@@ -87,7 +87,7 @@ author:
   employer         :
   pubmed           : 
   googlescholar    : "https://scholar.google.com/citations?user=mgHg9O4AAAAJ&hl=en&inst=3189495329521712930"
-  email            : "alexander.alleman 'at' wsu.edu"
+  email            : "alexander.alleman@wsu.edu"
   researchgate     :  # example: "https://www.researchgate.net/profile/yourprofile"
   uri              :
   bitbucket        :
