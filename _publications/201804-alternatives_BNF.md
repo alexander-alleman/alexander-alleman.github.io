@@ -10,7 +10,7 @@ citation: 'Mus, F., Alleman, A.B., Pence, N., Seefeldt, L.C., Peters, J.W., Expl
 
 Review of the alternative nitrogenases, detailing the biochemistry, genetics, and evolution of the V- and Fe-only nitrogenases. 
 
-![Evolution figure](alexander-alleman.github.io/images/Figure6.tif)
+![](/images/Figure6.tiff)
 
 [Download paper here](http://alexander-alleman.github.io/files/201804-alternatives_BNF.pdf)
 
