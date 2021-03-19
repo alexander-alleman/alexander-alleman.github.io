@@ -56,7 +56,7 @@ Skills
     * Construction of gene deletions using congression
 * Dry lab
   * Microbial Community analysis 
-    * Utilized both Mothur and Qimme pathways for data analysis of 16S rRNA sequence data
+    * Utilized both Mothur and Qiime2 pathways for data analysis of 16S rRNA sequence data
     * Used phyloseq and deseq2 for statistical analysis 
   * RNA-seq analysis
     * Used multiple pipelines to analysis RNA-seq data from illumina reads
