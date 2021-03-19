@@ -10,4 +10,6 @@ citation: 'Alleman, A.B. <i>et al.</i> Drivers of diazotroph community structure
 ---
 This paper was an initial survey into the free-living diazotrophic and general bacterial communities of an economically import crop rotation system in Montana. We showed how the influence of farm management practices, geography, and edaphic properties all influence the two communities in different ways. Characterization of free-living diazotrophs is rare in large scale agricultural ecosystems and we hope that this is a starting point for further investigation into the management of soil microbiomes. 
 
+![](/images/montana_map.jpg)
+
 [Download paper here](http://alexander-alleman.github.io/files/20200824-Diazotroph_community.pdf)
