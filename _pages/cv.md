@@ -110,7 +110,7 @@ Honors and Awards
 
 Teaching
 ======
-* 	Montana State University
+* Montana State University
   * Organic Chemistry Lab Teaching Assistant -  2015-2016
     * Taught 3-4 labs consisting of ~15 students twice a week 
     * Proctored and graded tests 
@@ -120,7 +120,6 @@ Teaching
   * Supplementary Instructor for Calculus 1, General and Organic Chemistry - 2012-2014
     * Out of class instruction for struggling students, designed
 tutoring session and created course work. 
-
 
 
 Mentorship
