@@ -1,5 +1,5 @@
 ---
-title: "Balancing oxygen and nitrogen reduction: how Azotobacter vinelandii fixes nitrogen under high aeration conditions "
+title: "Balancing oxygen and nitrogen reduction: how <i>Azotobacter vinelandii</i> fixes nitrogen under high aeration conditions "
 collection: talks
 type: "Seminar"
 permalink: /talks/2020-11-18-MPSseminar2
