@@ -1,11 +1,9 @@
 ---
 title: 'Introduction to Blog'
-date: 2012-08-14
-permalink: /posts/2012/08/blog-post-1/
+date: 2021-04-06
+permalink: /posts/2021-04-06-IntroBlog
 tags:
-  - cool posts
-  - category1
-  - category2
+
 ---
 
 I hope to blog my work as well as some fun projects in coding and even some updates to outdoor activities. 
