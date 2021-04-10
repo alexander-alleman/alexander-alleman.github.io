@@ -80,6 +80,8 @@ Talks
 
 Conferences
 ======
+* 7th Conference on Constraint-Based Reconstruction and Analysis (COBRA 2021)
+  * *Online - March 2021*
 * Multiscale Microbial Dynamics Modeling Summer School
   * *Online - July 2020*
 * Cluster of Excellence on Plant Sciences Summer School
@@ -108,11 +110,11 @@ Honors and Awards
 * Thornton Biology Research Fellowship - 2013
 * Organic Chemistry Student of the Year - 2012
 
-Teaching
+University Teaching Experience
 ======
 * Montana State University
   * Organic Chemistry Lab Teaching Assistant -  2015-2016
-    * Taught 3-4 labs consisting of ~15 students twice a week 
+    * Taught 3 labs per semester consisting of ~15 students twice a week 
     * Proctored and graded tests 
 
 * Western Colorado University 
@@ -120,6 +122,15 @@ Teaching
   * Supplementary Instructor for Calculus 1, General and Organic Chemistry - 2012-2014
     * Out of class instruction for struggling students, designed
 tutoring session and created course work. 
+
+Community Teaching Experience
+======
+* Skype a Scientist - 2020-present
+  * Give lectures and Q&A sessions for classrooms around the country 
+  * Audience- Highschool students interested in research and college
+* Plant Science Day - 2018-present
+  * An annual event for that demonstrates plant science for children of all ages
+  * Audience- 3-15 yr. olds 
 
 
 Mentorship
