@@ -13,14 +13,14 @@ Education
 ======
 * B.S. in Biology and Chemistry, Western Colorado University, 2014
 
-* Ph.D in Molecular Plant Sciences, Washington State University, 2021 (expected)
+* Ph.D. in Molecular Plant Sciences, Washington State University, 2021 (expected)
 
 Research experience
 ======
 * Graduate Research Assistant
   * Washington State University
-    * Investigating the physiology of obligate aerobic nitrogen fixing bacteria. Use of laboratory and computational skills to develop a hypothesis and experimentally determine optimal nitrogen fixing conditions for future biotechnologies. 
-    * Determining the variables that influence nitrogen fixing community ecology by using multivariate statistics and co-occurrence networks. 
+    * Investigating the physiology of obligate aerobic nitrogen-fixing bacteria. Use of laboratory and computational skills to develop a hypothesis and experimentally determine optimal nitrogen-fixing conditions for future biotechnologies. 
+    * Determining the variables that influence nitrogen-fixing community ecology by using multivariate statistics and co-occurrence networks. 
   * Supervisor: Professor John W. Peters
 
 * Graduate Research Assistant
@@ -40,15 +40,15 @@ Skills
     * Growth and maintenance of multiple strains
     * Bioreactor growth
     * Optimizing growths for recombinant protein expression
-    * Use of anerobic techniques (Coy/mbraun, bench top/Schlenk line)
+    * Use of anaerobic techniques (Coy/mbraun, benchtop/Schlenk line)
     * Developed automated growth protocols using a plate reader
   * Analytical 
     * HPLC 
-      * Analysis of oxygen sensitive compounds
+      * Analysis of oxygen-sensitive compounds
     * GC 
       * Developed and ran protocols for multiple *in vivo* and *in vitro* assays
     * UV-Vis
-      * Preformed multiple *in vivo* and *in vitro* assays as well as adapted lab prtocols to plate reader
+      * Preformed multiple *in vivo* and *in vitro* assays as well as adapted lab protocols to plate reader
   * Molecular 
     * DNA and RNA extraction from cell culture and soil samples
     * PCR and qPCR
@@ -59,12 +59,11 @@ Skills
     * Utilized both Mothur and Qiime2 pathways for data analysis of 16S rRNA sequence data
     * Used phyloseq and deseq2 for statistical analysis 
   * RNA-seq analysis
-    * Used multiple pipelines to analysis RNA-seq data from illumina reads
+    * Used multiple pipelines to analyze RNA-seq data from Illumina reads
     * Analyzed data using r packages 
   * Metabolic Modeling 
-    * Currated, annotated, and analysis genome scale metabolic model using the COBRApy package
+    * Curated, annotated, and analyzed genome-scale metabolic model using the COBRApy package
     * Constructed and tested kinetic models using Tellurium
-
 
 Publications
 ======
@@ -85,12 +84,12 @@ Conferences
 * Multiscale Microbial Dynamics Modeling Summer School
   * *Online - July 2020*
 * Cluster of Excellence on Plant Sciences Summer School
-  * *Colonge, Germany - May 2019*
-  * Poster prestented - Awarded best poster
+  * *Cologne, Germany - May 2019*
+  * Poster presented - Awarded best poster
 * Western Photosynthesis Conference
   * *Friday Harbor, WA, USA - January 2019*
   * Poster presented
-* European Nitrogen Fixation Confrence
+* European Nitrogen Fixation Conference
   * *Stockholm, Sweden - August 2018*
   * Poster presented
 * West Coast Protein Crystallography Workshop
@@ -105,7 +104,7 @@ Honors and Awards
 * John & Maggie McDougall Scholarship - 2020
 * Clarence “Bud” Ryan Institute of Biological Chemistry Travel Scholarship - 2019
 * CEPLAS Summer School Best Poster - 2019
-* WCPCW Best Poster	- 2017
+* WCPCW Best Poster - 2017
 * Mountain Sports Leadership Award - 2014
 * Thornton Biology Research Fellowship - 2013
 * Organic Chemistry Student of the Year - 2012
@@ -114,11 +113,11 @@ University Teaching Experience
 ======
 * Montana State University
   * Organic Chemistry Lab Teaching Assistant -  2015-2016
-    * Taught 3 labs per semester consisting of ~15 students twice a week 
+    * Taught three labs per semester consisting of ~15 students twice a week 
     * Proctored and graded tests 
 
 * Western Colorado University 
-  *	General and Organic Chemistry Lab Teaching Assistant - 2011-2014
+  * General and Organic Chemistry Lab Teaching Assistant - 2011-2014
   * Supplementary Instructor for Calculus 1, General and Organic Chemistry - 2012-2014
     * Out of class instruction for struggling students, designed
 tutoring session and created course work. 
@@ -127,17 +126,15 @@ Community Teaching Experience
 ======
 * Skype a Scientist - 2020-present
   * Give lectures and Q&A sessions for classrooms around the country 
-  * Audience- Highschool students interested in research and college
+  * Audience- High school students interested in research and college
 * Plant Science Day - 2018-present
-  * An annual event for that demonstrates plant science for children of all ages
+  * An annual event that demonstrates plant science for children of all ages
   * Audience- 3-15 yr. olds 
-
 
 Mentorship
 ======
 * Summer Undergraduate Researcher - Aasiya Islam - 2019
   * Quantification of quinone/hydroquinone in *A. vinelandii* using HPLC
-
 
 Volunteerism
 ======
@@ -146,5 +143,6 @@ Volunteerism
 
 * President of the Institute of Biological Chemistry Graduate Student Association - 2017-2020
   * Host seminar talks by outside speakers as well as an inter-department monthly graduate student talk  
-  *	Help organize an annual community food drive 
+  * Help organize an annual community food drive 
+
 
