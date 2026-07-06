@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alexander B. Alleman</title>
+<meta name="description" content="Alexander B. Alleman — Assistant Professor of Chemistry at Western Colorado University. Microbial ecology, genomics, and experimental evolution of Methylobacterium.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="index.html">Alexander&nbsp;B.&nbsp;Alleman</a>
+    <div class="nav__links">
+      <a href="index.html" class="is-active">About</a>
+      <a href="research.html">Research</a>
+      <a href="publications.html">Publications</a>
+      <a href="teaching.html">Teaching</a>
+      <a href="cv.html">CV</a>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap page">
+  <div class="home">
+
+    <!-- ---- profile sidebar ---- -->
+    <aside class="profile">
+      <div class="profile__photo" style="position:relative;">
+        <img src="assets/img/profile.jpg" alt="Alexander B. Alleman"
+             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
+             onerror="this.remove()">
+        <span>AA</span>
+      </div>
+      <ul class="meta">
+        <li><i class="ti ti-building-bank" aria-hidden="true"></i><span>Assistant Professor of Chemistry, Western Colorado University</span></li>
+        <li><i class="ti ti-map-pin" aria-hidden="true"></i><span>Gunnison, Colorado</span></li>
+        <li><i class="ti ti-mail" aria-hidden="true"></i><a href="mailto:aalleman@western.edu">aalleman@western.edu</a></li>
+      </ul>
+      <div class="social">
+        <a href="https://scholar.google.com/citations?user=mgHg9O4AAAAJ&hl=en" title="Google Scholar" aria-label="Google Scholar"><i class="ti ti-school" aria-hidden="true"></i></a>
+        <a href="https://orcid.org/0000-0002-3589-6914" title="ORCID" aria-label="ORCID"><i class="ti ti-id-badge-2" aria-hidden="true"></i></a>
+        <a href="https://github.com/alexander-alleman" title="GitHub" aria-label="GitHub"><i class="ti ti-brand-github" aria-hidden="true"></i></a>
+      </div>
+    </aside>
+
+    <!-- ---- main column ---- -->
+    <div class="main">
+      <p class="eyebrow">Microbial ecology · genomics · experimental evolution</p>
+      <h1 class="title">Alexander B. Alleman</h1>
+      <p class="lead">I study how bacteria evolve, compete, and coexist &mdash; using
+        <em>Methylobacterium</em> and the leaf-surface microbiome as a window into
+        microbial ecology.</p>
+
+      <p>My lab treats the phyllosphere as a tractable system for questions that span
+        ecology and enzyme mechanism: the metabolic trade-offs a cell makes when it takes
+        up a new pathway, and the eco-evolutionary dynamics that let a synthetic community
+        hold together over time. The work leans on comparative genomics, experimental
+        evolution, and a fair amount of computation, paired with classic microbial
+        physiology at the bench.</p>
+
+      <p>Before joining Western in 2025, I was a postdoctoral fellow with Christopher J.
+        Marx at the University of Idaho. I earned my Ph.D. in Molecular Plant Science at
+        Washington State University with John W. Peters, and my B.A. in Biochemistry and
+        Cell Biology here at Western Colorado University &mdash; so this is a bit of a
+        homecoming. Outside the lab you'll find me mountain biking, cycling, and running
+        the trails around the Gunnison Valley.</p>
+
+      <h2 class="section">Selected publications</h2>
+      <ul class="sel">
+        <li><span class="y">2026</span><span class="t">Evolutionary integration of a foreign aromatic catabolic pathway drives metabolic trade-offs in <em>M. extorquens</em> PA1 &nbsp;<span>· bioRxiv</span></span></li>
+        <li><span class="y">2025</span><span class="t">Led astray by 16S rRNA: reinstatement of the genus <em>Methylobacterium</em> using phylogenomics <span>· ISME J.</span></span></li>
+        <li><span class="y">2023</span><span class="t">Mechanisms for generating low-potential electrons across nitrogen-fixing bacteria <span>· AEM</span></span></li>
+        <li><span class="y">2021</span><span class="t">Metabolic model of the obligate aerobe <em>Azotobacter vinelandii</em> <span>· mBio</span></span></li>
+      </ul>
+      <p style="margin-top:14px;"><a href="publications.html">All publications &rarr;</a></p>
+    </div>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <span>© <span id="yr"></span> Alexander B. Alleman</span>
+    <span>Western Colorado University · Gunnison, CO</span>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>

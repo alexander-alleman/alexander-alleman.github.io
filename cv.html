@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CV · Alexander B. Alleman</title>
+<meta name="description" content="Curriculum vitae of Alexander B. Alleman.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="index.html">Alexander&nbsp;B.&nbsp;Alleman</a>
+    <div class="nav__links">
+      <a href="index.html">About</a>
+      <a href="research.html">Research</a>
+      <a href="publications.html">Publications</a>
+      <a href="teaching.html">Teaching</a>
+      <a href="cv.html" class="is-active">CV</a>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap page">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+    <div>
+      <p class="eyebrow">Curriculum vitae</p>
+      <h1 class="title">CV</h1>
+    </div>
+    <a class="chip chip--link" style="font-size:13px; padding:8px 14px;"
+       href="assets/cv/Alleman_CV.pdf" download>
+       <i class="ti ti-download" aria-hidden="true"></i>&nbsp;Download PDF</a>
+  </div>
+
+  <p>Ph.D. in Molecular Plant Science (Washington State University, 2021); postdoctoral
+     fellowship with Christopher J. Marx (University of Idaho, 2022&ndash;2025); Assistant
+     Professor of Chemistry at Western Colorado University since 2025. The full record of
+     publications, talks, mentoring, and service is below.</p>
+
+  <object class="cv-frame" data="assets/cv/Alleman_CV.pdf" type="application/pdf">
+    <p style="padding:20px;">Your browser can't display the embedded PDF.
+       <a href="assets/cv/Alleman_CV.pdf">Download the CV instead</a>.</p>
+  </object>
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <span>© <span id="yr"></span> Alexander B. Alleman</span>
+    <span>Western Colorado University · Gunnison, CO</span>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>
