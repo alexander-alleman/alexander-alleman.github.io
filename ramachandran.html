@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phi &amp; Psi Angles &middot; Alexander B. Alleman</title>
+<meta name="description" content="An interactive alanine dipeptide for learning backbone phi and psi angles: turn the torsions in 3D, watch steric clashes appear, and see the Ramachandran plot built from the same hard-sphere model.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+
+/* ============================== tokens ================================= */
+#rbench{
+  /* ---- ported from assets/css/style.css so the tool matches the site ---- */
+  --paper:#ffffff;  --surface:#ffffff;  --surface-2:#f5f3ee;
+  --ink:#1a1a1a;    --ink-2:#55534d;    --ink-3:#8a877f;
+  --rule:#eae8e2;   --rule-2:#ddd9cf;
+
+  --accent:#0f6e56;  --accent-ink:#0b5442;  --accent-soft:#e1f5ee;
+
+  /* ochre density ramp -- the plot's own scale, kept distinct from the accent */
+  --r0:#f0eee8;  --r1:#e6dcc2;  --r2:#d9bd7e;  --r3:#c1902f;
+
+  /* semantic, deliberately neither the accent nor an atom colour */
+  --ok:#6b8f3d;   --ok-soft:#eef2e2;
+  --warn:#b8791a; --warn-soft:#f8ecd6;
+  --bad:#c22c40;  --bad-soft:#fadfe3;
+
+  /* CPK atom colours */
+  --at-C:#5d6470; --at-N:#2f62c4; --at-O:#c8492f; --at-H:#dcd7cb;
+  --at-CB:#7a6a49;
+
+  --shadow:0 1px 2px rgba(26,26,26,.05), 0 8px 24px -14px rgba(26,26,26,.16);
+  --mono:ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif:"Newsreader", Georgia, "Times New Roman", serif;
+}
+
+
+
+/* ============================== base =================================== */
+#rbench *{box-sizing:border-box}
+#rbench{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+
+#rbench h1, #rbench h2, #rbench h3{font-family:var(--serif); font-weight:600; text-wrap:balance; margin:0}
+#rbench .lbl{
+  font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:600;
+}
+#rbench .mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+#rbench :focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+
+/* ============================== header ================================= */
+
+
+
+
+
+#rbench .legend-cpk{display:flex; gap:14px; flex-wrap:wrap; align-items:center; padding-bottom:3px}
+#rbench .cpk{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-2)}
+#rbench .cpk i{width:11px; height:11px; border-radius:50%; display:block;
+  box-shadow:inset 0 -2px 3px rgba(0,0,0,.28), inset 0 2px 2px rgba(255,255,255,.35)}
+
+/* ============================== cards ================================== */
+#rbench .stage{display:grid; grid-template-columns:1.08fr 1fr; gap:18px; align-items:start}
+#rbench .deck{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px; align-items:start}
+#rbench .card{
+  background:var(--surface); border:1px solid var(--rule); border-radius:6px;
+  box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+}
+#rbench .card > .head{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  padding:12px 15px 10px; border-bottom:1px solid var(--rule);
+}
+#rbench .card > .head h2{font-size:16px; letter-spacing:-.008em}
+#rbench .card > .head .note{font-size:11.5px; color:var(--ink-3)}
+#rbench .card > .body{padding:15px}
+#rbench .card > .cardfoot{
+  padding:10px 15px; border-top:1px solid var(--rule);
+  background:var(--surface-2); font-size:12px; color:var(--ink-2);
+}
+
+/* ============================== viewport =============================== */
+#rbench .viewport{position:relative; background:var(--r0)}
+#rbench #gl{display:block; width:100%; height:468px; touch-action:none; cursor:grab}
+#rbench #gl.dragging{cursor:grabbing}
+#rbench .vp-hint{
+  position:absolute; left:12px; bottom:10px; font-size:11px; color:var(--ink-3);
+  pointer-events:none; letter-spacing:.02em;
+}
+#rbench .vp-toggles{
+  display:flex; flex-wrap:wrap; gap:7px; padding:11px 15px;
+  border-top:1px solid var(--rule); background:var(--surface-2);
+}
+#rbench .tog{
+  font:inherit; font-size:12px; padding:4px 10px; border-radius:20px; cursor:pointer;
+  border:1px solid var(--rule-2); background:transparent; color:var(--ink-2);
+  transition:background .13s, color .13s, border-color .13s;
+}
+#rbench .tog:hover{border-color:var(--ink-3); color:var(--ink)}
+#rbench .tog[aria-pressed="true"]{
+  background:var(--accent); border-color:var(--accent); color:#fff; font-weight:500;
+}
+
+/* ============================== plot =================================== */
+#rbench .plotwrap{position:relative; padding:12px 14px 6px}
+#rbench #rama{display:block; width:100%; height:auto; touch-action:none; cursor:crosshair}
+#rbench .ramp{display:flex; align-items:center; gap:9px; font-size:11.5px; color:var(--ink-2)}
+#rbench .ramp .sw{display:flex; border-radius:2px; overflow:hidden; border:1px solid var(--rule-2)}
+#rbench .ramp .sw i{width:20px; height:11px; display:block}
+
+/* ============================== sliders ================================ */
+#rbench .dial{display:grid; grid-template-columns:auto 1fr auto; gap:11px 13px; align-items:center}
+#rbench .dial .lab{font-family:var(--serif); font-style:italic; font-size:21px; width:1.1em; text-align:center}
+#rbench .dial .val{
+  font-family:var(--mono); font-size:15px; font-weight:500; min-width:5.2em; text-align:right;
+  color:var(--ink); font-variant-numeric:tabular-nums;
+}
+#rbench .dial .defn{
+  grid-column:1/-1; font-size:11.5px; color:var(--ink-3); margin:-6px 0 4px;
+  padding-left:calc(1.1em + 13px);
+}
+#rbench input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:20px;
+  background:transparent; margin:0; cursor:pointer;
+}
+#rbench input[type=range]::-webkit-slider-runnable-track{
+  height:4px; border-radius:2px; background:var(--surface-2); border:1px solid var(--rule);
+}
+#rbench input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--surface); margin-top:-7px;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+#rbench input[type=range]::-moz-range-track{
+  height:4px; border-radius:2px; background:var(--surface-2); border:1px solid var(--rule);
+}
+#rbench input[type=range]::-moz-range-thumb{
+  width:14px; height:14px; border-radius:50%; background:var(--accent);
+  border:2px solid var(--surface); box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+
+/* ============================== presets ================================ */
+#rbench .presets{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:8px; margin-top:16px}
+#rbench .preset{
+  font:inherit; text-align:left; cursor:pointer; padding:8px 10px; border-radius:5px;
+  border:1px solid var(--rule); background:var(--surface); color:var(--ink);
+  display:flex; flex-direction:column; gap:1px;
+  transition:border-color .13s, background .13s, transform .08s;
+}
+#rbench .preset:hover{border-color:var(--accent); background:var(--accent-soft)}
+#rbench .preset:active{transform:translateY(1px)}
+#rbench .preset[aria-current="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+#rbench .preset b{font-weight:600; font-size:12.5px}
+#rbench .preset span{font-family:var(--mono); font-size:11px; color:var(--ink-3)}
+
+/* ============================== verdict ================================ */
+#rbench .verdict{display:flex; align-items:center; gap:11px; margin-bottom:4px}
+#rbench .vchip{
+  display:inline-flex; align-items:center; gap:7px; padding:5px 12px 5px 10px;
+  border-radius:20px; font-size:13px; font-weight:600; letter-spacing:.005em;
+}
+#rbench .vchip i{width:8px; height:8px; border-radius:50%; background:currentColor; flex:none}
+#rbench .vchip.ok{background:var(--ok-soft);   color:var(--ok)}
+#rbench .vchip.warn{background:var(--warn-soft); color:var(--warn)}
+#rbench .vchip.bad{background:var(--bad-soft);  color:var(--bad)}
+#rbench .verdict .near{font-size:12px; color:var(--ink-3); margin-left:auto; text-align:right}
+#rbench .plain{font-size:13.5px; color:var(--ink-2); margin:8px 0 0; max-width:56ch}
+#rbench .plain b{color:var(--ink); font-weight:600}
+
+#rbench .contacts{list-style:none; margin:15px 0 0; padding:0; display:flex; flex-direction:column; gap:1px}
+#rbench .contacts li{
+  display:grid; grid-template-columns:1fr auto; gap:2px 12px; align-items:center;
+  padding:7px 0; border-top:1px solid var(--rule);
+}
+#rbench .contacts .pair{font-family:var(--mono); font-size:12.5px}
+#rbench .contacts .pair em{font-style:normal; color:var(--ink-3)}
+#rbench .contacts .num{font-family:var(--mono); font-size:12.5px; text-align:right; white-space:nowrap}
+#rbench .contacts .bar{
+  grid-column:1/-1; height:3px; border-radius:2px; background:var(--surface-2);
+  overflow:hidden; margin-top:2px;
+}
+#rbench .contacts .bar i{display:block; height:100%; border-radius:2px}
+#rbench .contacts .why{grid-column:1/-1; font-size:11.5px; color:var(--ink-3); margin-top:3px}
+#rbench .empty{color:var(--ink-3); font-size:13px; margin:14px 0 0; font-style:italic}
+
+/* ---- closest-approach gauge ---- */
+#rbench .closest{margin-top:18px; padding-top:14px; border-top:1px solid var(--rule)}
+#rbench .closest .lbl{margin:0 0 8px}
+#rbench .crow{display:flex; justify-content:space-between; align-items:baseline; gap:12px}
+#rbench .crow .pair{font-size:13px}
+#rbench .crow .pair em{font-style:normal; color:var(--ink-3)}
+#rbench .gauge{position:relative; height:6px; border-radius:3px; background:var(--surface-2);
+  border:1px solid var(--rule); margin:9px 0 7px; overflow:visible}
+#rbench .gauge i{display:block; height:100%; border-radius:3px 0 0 3px; background:var(--ok);
+  transition:width .18s ease, background .18s ease}
+#rbench .gauge .tick{position:absolute; top:-4px; width:1px; height:14px; background:var(--ink-3)}
+#rbench .gauge .tick::after{content:"contact"; position:absolute; top:15px; left:-2px;
+  font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3);
+  white-space:nowrap}
+#rbench .cwhy{font-size:12px; color:var(--ink-3); margin:16px 0 0}
+
+/* ============================== strictness ============================= */
+#rbench .strict{display:flex; align-items:center; gap:10px; font-size:12px; flex-wrap:wrap}
+#rbench .strict input[type=range]{flex:1 1 120px; min-width:110px}
+#rbench .strict .v{font-family:var(--mono); min-width:6.6em; text-align:right; color:var(--ink)}
+
+/* ============================== notes ================================== */
+#rbench .notes{margin-top:18px}
+#rbench .notes .body{columns:2; column-gap:34px}
+#rbench .notes h3{font-size:14.5px; margin:0 0 3px; break-after:avoid}
+#rbench .notes p{margin:0 0 14px; font-size:13.5px; color:var(--ink-2); break-inside:avoid}
+#rbench .notes p:last-child{margin-bottom:0}
+#rbench .notes .k{font-family:var(--mono); font-size:12.5px; color:var(--ink); background:var(--surface-2);
+  padding:1px 4px; border-radius:3px; white-space:nowrap}
+#rbench .gk{font-family:var(--serif); font-style:italic}
+
+
+
+@media (max-width:1000px){
+  #rbench .stage, #rbench .deck{grid-template-columns:1fr}
+  #rbench .notes .body{columns:1}
+  #rbench #gl{height:360px}
+}
+@media (prefers-reduced-motion:reduce){
+  #rbench *{transition:none !important}
+}
+
+
+/* ---- ported page: the tool gets a wider column than the prose ---------- */
+#rbench{
+  max-width:1140px; margin:0 auto; padding:0 28px 8px;
+  font-family:var(--sans); font-size:15px; line-height:1.55; color:var(--ink);
+  background:transparent;
+}
+#rbench .cpkrow{
+  display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center;
+  margin:0 0 14px; padding:0;
+}
+#rbench .method{
+  margin:20px 0 0; padding-top:15px; border-top:1px solid var(--rule);
+  font-size:12.5px; color:var(--ink-3); max-width:88ch; line-height:1.6;
+}
+/* the plot is square and carries 70px of axis gutter, so give its column a
+   little more room than the viewport to land the two cards at equal height.
+   Guarded: this rule is emitted after the max-width:1000px single-column rule
+   and would otherwise outrank it and keep two columns on phones. */
+@media (min-width:1001px){ #rbench .stage{grid-template-columns:1fr 1.04fr} }
+
+/* unfilled track: --surface-2 is invisible against this site's white ground */
+#rbench .gauge{background:var(--rule-2); border-color:var(--rule-2)}
+#rbench .contacts .bar{background:var(--rule-2)}
+#rbench input[type=range]::-webkit-slider-runnable-track{
+  background:var(--rule-2); border-color:var(--rule-2);
+}
+#rbench input[type=range]::-moz-range-track{
+  background:var(--rule-2); border-color:var(--rule-2);
+}
+#rbench .cwhy{margin-top:21px}
+
+@media (min-width:1050px){ #rbench .notes .body{columns:3; column-gap:30px} }
+@media (max-width:700px){  #rbench{padding:0 20px 8px} }
+
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a class="nav__brand" href="index.html">Alexander&nbsp;B.&nbsp;Alleman</a>
+    <div class="nav__links">
+      <a href="index.html">About</a>
+      <a href="research.html">Research</a>
+      <a href="publications.html">Publications</a>
+      <a href="teaching.html" class="is-active">Teaching</a>
+      <a href="cv.html">CV</a>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap page">
+  <p class="eyebrow">Teaching resource &middot; Biochemistry</p>
+  <h1 class="title">Phi &amp; psi angles</h1>
+  <p class="lead">The peptide backbone can only bend in two places per residue. Turn those
+     two angles by hand, watch the atoms run into each other, and the Ramachandran plot
+     draws itself.</p>
+
+  <p>Drag the &phi; and &psi; sliders, or drag straight on the plot &mdash; the model and the
+     marker stay locked together. When two atoms come within van der Waals contact the pair
+     is flagged in the 3D view with the distance in &aring;ngstr&ouml;ms, so a forbidden region on
+     the plot always has a specific collision behind it. Every preset is a real
+     conformation: try <em>&alpha;-helix</em>, then <em>Eclipsed</em>, and compare.</p>
+
+  <p style="color:var(--ink-2); font-size:15px;">The shaded background is not a traced
+     figure. It is computed when the page loads by testing this exact molecule at
+     16,200 combinations of &phi; and &psi; &mdash; so the plot and the clashes can never
+     disagree with each other.</p>
+</main>
+
+<div id="rbench">
+  <div class="cpkrow" aria-label="Atom colour key">
+    <span class="cpk"><i style="background:var(--at-C)"></i>carbon</span>
+    <span class="cpk"><i style="background:var(--at-N)"></i>nitrogen</span>
+    <span class="cpk"><i style="background:var(--at-O)"></i>oxygen</span>
+    <span class="cpk"><i style="background:var(--at-H)"></i>hydrogen</span>
+    <span class="cpk"><i style="background:var(--at-CB)"></i>C&beta; side chain</span>
+  </div>
+<div class="stage">
+
+  <!-- ------------------------------ 3D ------------------------------- -->
+  <figure class="card" style="margin:0">
+    <div class="head">
+      <h2>Ace&ndash;Ala&ndash;NMe</h2>
+      <span class="note">drag to rotate &middot; scroll to zoom</span>
+    </div>
+    <div class="viewport">
+      <canvas id="gl"></canvas>
+      <div class="vp-hint" id="vpHint">N and C&alpha; are held still &mdash; everything past C&alpha; swings</div>
+    </div>
+    <div class="vp-toggles">
+      <button class="tog" id="tPlanes"  aria-pressed="true">Peptide planes</button>
+      <button class="tog" id="tLabels"  aria-pressed="true">Atom labels</button>
+      <button class="tog" id="tArrows"  aria-pressed="true">Rotation arrows</button>
+      <button class="tog" id="tVdw"     aria-pressed="false">van der Waals shells</button>
+      <button class="tog" id="tH"       aria-pressed="true">Hydrogens</button>
+      <button class="tog" id="tSpin"    aria-pressed="false">Spin</button>
+    </div>
+  </figure>
+
+  <!-- ---------------------------- plot ------------------------------- -->
+  <figure class="card" style="margin:0">
+    <div class="head">
+      <h2>Ramachandran plot</h2>
+      <span class="note">click or drag anywhere</span>
+    </div>
+    <div class="plotwrap"><canvas id="rama" width="880" height="880"></canvas></div>
+    <div class="cardfoot" style="display:flex; flex-direction:column; gap:9px">
+      <div class="ramp">
+        <span class="sw" aria-hidden="true">
+          <i style="background:var(--r0)"></i><i style="background:var(--r1)"></i>
+          <i style="background:var(--r2)"></i><i style="background:var(--r3)"></i>
+        </span>
+        <span>forbidden &rarr; strained &rarr; comfortable</span>
+      </div>
+      <label class="strict">
+        <span>Hard-sphere strictness</span>
+        <input type="range" id="strict" min="72" max="92" value="85" step="1">
+        <span class="v mono" id="strictV">0.85 &times; vdW</span>
+      </label>
+    </div>
+  </figure>
+</div>
+
+<div class="deck">
+
+  <!-- --------------------------- controls ---------------------------- -->
+  <section class="card">
+    <div class="head"><h2>Torsion angles</h2><span class="note">&minus;180&deg; to +180&deg;</span></div>
+    <div class="body">
+      <div class="dial">
+        <span class="lab">&phi;</span>
+        <input type="range" id="sPhi" min="-180" max="180" step="1" value="-57"
+               aria-label="phi angle in degrees">
+        <span class="val" id="vPhi">&minus;57&deg;</span>
+        <span class="defn">rotation about the <b>N&mdash;C&alpha;</b> bond &middot;
+              measured C&prime;<sub>(i&minus;1)</sub>&ndash;N&ndash;C&alpha;&ndash;C&prime;</span>
+
+        <span class="lab">&psi;</span>
+        <input type="range" id="sPsi" min="-180" max="180" step="1" value="-47"
+               aria-label="psi angle in degrees">
+        <span class="val" id="vPsi">&minus;47&deg;</span>
+        <span class="defn">rotation about the <b>C&alpha;&mdash;C&prime;</b> bond &middot;
+              measured N&ndash;C&alpha;&ndash;C&prime;&ndash;N<sub>(i+1)</sub></span>
+      </div>
+
+      <p class="lbl" style="margin:18px 0 0">Jump to a known conformation</p>
+      <div class="presets" id="presets"></div>
+    </div>
+  </section>
+
+  <!-- ---------------------------- sterics --------------------------- -->
+  <section class="card">
+    <div class="head"><h2>Steric check</h2><span class="note" id="pairCount"></span></div>
+    <div class="body">
+      <div class="verdict">
+        <span class="vchip ok" id="chip"><i></i><span id="chipText">No clashes</span></span>
+        <span class="near" id="near"></span>
+      </div>
+      <p class="plain" id="plain"></p>
+      <ul class="contacts" id="contacts"></ul>
+      <p class="empty" id="noClash">Every non-bonded pair sits further apart than its
+         van der Waals contact distance. This backbone is comfortable.</p>
+      <div class="closest">
+        <p class="lbl">Closest approach in this conformation</p>
+        <div class="crow">
+          <span class="pair mono" id="cPair"></span>
+          <span class="mono" id="cNum"></span>
+        </div>
+        <div class="gauge"><i id="cBar"></i><span class="tick" id="cTick"></span></div>
+        <p class="cwhy" id="cWhy"></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ----------------------------- notes ------------------------------- -->
+<section class="card notes">
+  <div class="head"><h2>What you are looking at</h2>
+    <span class="note">for a first pass through protein structure</span></div>
+  <div class="body">
+    <h3>Two angles describe a residue</h3>
+    <p>The peptide bond is rigid: the six atoms
+       C<sub>&alpha;</sub>&ndash;C&prime;(=O)&ndash;N(&ndash;H)&ndash;C<sub>&alpha;</sub> lie in a plane
+       because the C&prime;&ndash;N bond has partial double-bond character. So a polypeptide is a
+       chain of stiff plates, and the only places it can bend are the two single bonds at each
+       C&alpha;. Those two rotations are <span class="gk">&phi;</span> and
+       <span class="gk">&psi;</span>. Give every residue its <span class="gk">&phi;</span> and
+       <span class="gk">&psi;</span> and you have specified the entire backbone fold.</p>
+
+    <h3>Reading the sign</h3>
+    <p>A torsion is measured by looking straight down the rotating bond. Rotating the far end
+       <em>clockwise</em> is positive. Both angles are <span class="k">0&deg;</span> when the two
+       outer bonds eclipse each other &mdash; press the <b>Eclipsed</b> preset and you will see
+       the worst collision on the whole map, which is exactly why the centre of the plot is empty.</p>
+
+    <h3>Where the forbidden zones come from</h3>
+    <p>Nothing about the plot is arbitrary. Atoms are spheres, and spheres cannot overlap. Sweep
+       <span class="gk">&phi;</span> toward 0&deg; and the carbonyl oxygen of the preceding residue
+       drives into the amide hydrogen of the next one. Sweep <span class="gk">&psi;</span> toward
+       0&deg; and the same oxygen meets its own residue's amide. Roughly nine tenths of the plot
+       is ruled out this way &mdash; before chemistry, before hydrogen bonding, purely because
+       the atoms will not fit.</p>
+
+    <h3>Why the left half is the busy half</h3>
+    <p>C&beta; is the culprit. Alanine's side chain sits on one specific side of C&alpha;
+       because the residue is the <span class="k">L</span> isomer, and it blocks most of the
+       <span class="gk">&phi;</span>&nbsp;&gt;&nbsp;0 half of the map. Turn on the van der Waals
+       shells and drag into the right-hand side to watch it happen. Glycine, which has no
+       C&beta;, is the one residue that roams freely there &mdash; which is why glycine turns up
+       wherever a chain needs to double back.</p>
+
+    <h3>The three islands</h3>
+    <p>The lower-left basin near <span class="k">(&minus;57, &minus;47)</span> is the right-handed
+       &alpha;-helix. The broad upper-left region around
+       <span class="k">(&minus;139, +135)</span> is &beta;-sheet, and the fully extended chain sits
+       out at the corners. The small strained island at <span class="k">(+57, +47)</span> is the
+       left-handed &alpha;-helix &mdash; reachable, but tight enough that few residues other than
+       glycine bother.</p>
+
+    <h3>What this model leaves out</h3>
+    <p>Bond lengths and angles are held at ideal values, &omega; is pinned at 180&deg;
+       (<em>trans</em>), and the side-chain methyl is kept staggered. The atoms are hard spheres,
+       so there is no electrostatics and no hydrogen bonding &mdash; a real energy map softens
+       these edges and adds a shallow bridge between the &beta; and &alpha;<sub>R</sub> basins.
+       Real proteins also sit slightly inside the strained zones, because a little strain here is
+       worth paying for a good hydrogen bond somewhere else.</p>
+  </div>
+</section>
+
+
+  <p class="method">Geometry is generated from ideal internal coordinates and rotated with an exact torsion construction, so the angles you read are the angles in the model. The plot is a hard-sphere map computed on a 2&deg; grid from the very same non-bonded atom pairs the 3D view checks; the contact criterion follows Ramachandran, Ramakrishnan &amp; Sasisekharan (1963) in spirit, using a fraction of the summed van der Waals radii that you can adjust.</p>
+</div>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <span>&copy; <span id="yr"></span> Alexander B. Alleman</span>
+    <span>Western Colorado University &middot; Gunnison, CO</span>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+
+<script>
+
+"use strict";
+/* ======================================================================
+   PART 1 - geometry engine  (validated against known conformations)
+   ====================================================================== */
+const DEG=Math.PI/180, RAD=180/Math.PI;
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const vlen=a=>Math.sqrt(dot(a,a));
+const norm=a=>{const L=vlen(a);return[a[0]/L,a[1]/L,a[2]/L];};
+const dist=(a,b)=>vlen(sub(a,b));
+
+/* place D bonded to C with |CD|=bond, angle(B,C,D)=ang, dihedral(A,B,C,D)=dih */
+function nerf(A,B,C,bond,ang,dih){
+  const th=ang*DEG, ph=dih*DEG;
+  const bc=norm(sub(C,B));
+  const n=norm(cross(sub(B,A),bc));
+  const m=cross(n,bc);
+  const d=[-bond*Math.cos(th), bond*Math.sin(th)*Math.cos(ph), bond*Math.sin(th)*Math.sin(ph)];
+  return [C[0]+bc[0]*d[0]+m[0]*d[1]+n[0]*d[2],
+          C[1]+bc[1]*d[0]+m[1]*d[1]+n[1]*d[2],
+          C[2]+bc[2]*d[0]+m[2]*d[1]+n[2]*d[2]];
+}
+
+const G={ b_CH3_C:1.508, b_C_O:1.231, b_C_N:1.329, b_N_CA:1.458, b_CA_C:1.525,
+          b_N_H:1.010, b_CA_HA:1.090, b_CA_CB:1.530, b_C_H:1.090,
+          a_CH3_C_N:116.2, a_CH3_C_O:120.8, a_C_N_CA:121.7, a_C_N_H:119.0,
+          a_N_CA_C:111.2, a_CA_C_N:116.2, a_CA_C_O:120.8, a_H_C_H:109.5,
+          half:54.5 };
+
+/* el, display label, group, human description */
+const ATOMS=[
+ {n:'CH3',   e:'C', lbl:'CH₃', g:'prev', d:'the methyl cap standing in for residue i−1'},
+ {n:"C'-1",  e:'C', lbl:"C'",       g:'prev', d:'the carbonyl carbon of the preceding residue'},
+ {n:'O-1',   e:'O', lbl:'O',        g:'prev', d:'the carbonyl oxygen of the preceding residue'},
+ {n:'N',     e:'N', lbl:'N',        g:'res',  d:'this residue’s amide nitrogen'},
+ {n:'H-N',   e:'H', lbl:'H',        g:'res',  d:'this residue’s amide hydrogen'},
+ {n:'CA',    e:'C', lbl:'Cα',  g:'res',  d:'the α-carbon'},
+ {n:'HA',    e:'H', lbl:'Hα',  g:'res',  d:'the α-hydrogen'},
+ {n:'CB',    e:'B', lbl:'Cβ',  g:'side', d:'the β-carbon — alanine’s side chain'},
+ {n:"C'",    e:'C', lbl:"C'",       g:'res',  d:'this residue’s carbonyl carbon'},
+ {n:'O',     e:'O', lbl:'O',        g:'res',  d:'this residue’s carbonyl oxygen'},
+ {n:'N+1',   e:'N', lbl:'N',        g:'next', d:'the amide nitrogen of the next residue'},
+ {n:'H-N+1', e:'H', lbl:'H',        g:'next', d:'the amide hydrogen of the next residue'},
+ {n:'CH3+1', e:'C', lbl:'CH₃', g:'next', d:'the methyl cap standing in for residue i+1'},
+ {n:'HB1',   e:'H', lbl:'',         g:'side', d:'a side-chain hydrogen'},
+ {n:'HB2',   e:'H', lbl:'',         g:'side', d:'a side-chain hydrogen'},
+ {n:'HB3',   e:'H', lbl:'',         g:'side', d:'a side-chain hydrogen'},
+ {n:'HP1',   e:'H', lbl:'',         g:'prev', d:'a hydrogen on the i−1 cap'},
+ {n:'HP2',   e:'H', lbl:'',         g:'prev', d:'a hydrogen on the i−1 cap'},
+ {n:'HP3',   e:'H', lbl:'',         g:'prev', d:'a hydrogen on the i−1 cap'},
+ {n:'HM1',   e:'H', lbl:'',         g:'next', d:'a hydrogen on the i+1 cap'},
+ {n:'HM2',   e:'H', lbl:'',         g:'next', d:'a hydrogen on the i+1 cap'},
+ {n:'HM3',   e:'H', lbl:'',         g:'next', d:'a hydrogen on the i+1 cap'},
+];
+const NA=ATOMS.length;
+const BONDS=[[0,1],[1,2],[1,3],[3,4],[3,5],[5,6],[5,7],[5,8],[8,9],[8,10],[10,11],[10,12],
+             [7,13],[7,14],[7,15],[0,16],[0,17],[0,18],[12,19],[12,20],[12,21]];
+const DOUBLE=[[1,2],[8,9]];                 // drawn as double bonds
+const PLANE_A=[0,1,2,3,4,5], PLANE_B=[5,8,9,10,11,12];
+
+/* 'B' is C-beta: same element as C for sterics, different colour in the view */
+const VDW={C:1.70,B:1.70,N:1.55,O:1.52,H:1.20};
+const BALL={C:0.36,B:0.37,N:0.35,O:0.34,H:0.21};
+
+function build(phi,psi){
+  const p=new Array(NA);
+  const aN=(180-G.a_CH3_C_N)*DEG, aO=(180-G.a_CH3_C_O)*DEG;
+  p[0]=[-G.b_CH3_C,0,0];
+  p[1]=[0,0,0];
+  p[3]=[G.b_C_N*Math.cos(aN),  G.b_C_N*Math.sin(aN), 0];
+  p[2]=[G.b_C_O*Math.cos(aO), -G.b_C_O*Math.sin(aO), 0];
+  p[5] =nerf(p[0],p[1],p[3], G.b_N_CA,G.a_C_N_CA,180);
+  p[4] =nerf(p[0],p[1],p[3], G.b_N_H, G.a_C_N_H,    0);
+  p[8] =nerf(p[1],p[3],p[5], G.b_CA_C,G.a_N_CA_C, phi);        // <- phi
+  p[10]=nerf(p[3],p[5],p[8], G.b_C_N, G.a_CA_C_N, psi);        // <- psi
+  p[9] =nerf(p[3],p[5],p[8], G.b_C_O, G.a_CA_C_O, psi+180);
+  p[12]=nerf(p[5],p[8],p[10],G.b_N_CA,G.a_C_N_CA,180);
+  p[11]=nerf(p[5],p[8],p[10],G.b_N_H, G.a_C_N_H,    0);
+  { // tetrahedral completion at CA; +cross(u,v) branch gives the L isomer
+    const u=norm(sub(p[3],p[5])), v=norm(sub(p[8],p[5]));
+    const b=norm(add(u,v)), q=norm(cross(u,v));
+    const c=Math.cos(G.half*DEG), s=Math.sin(G.half*DEG);
+    p[7]=add(p[5],mul(add(mul(b,-c),mul(q, s)),G.b_CA_CB));
+    p[6]=add(p[5],mul(add(mul(b,-c),mul(q,-s)),G.b_CA_HA));
+  }
+  for(let k=0;k<3;k++){
+    p[13+k]=nerf(p[3],p[5], p[7], G.b_C_H,G.a_H_C_H, 60+120*k);
+    p[16+k]=nerf(p[2],p[1], p[0], G.b_C_H,G.a_H_C_H,  0+120*k);
+    p[19+k]=nerf(p[8],p[10],p[12],G.b_C_H,G.a_H_C_H,  0+120*k);
+  }
+  return p;
+}
+
+/* pairs that can clash: skip 1-2 and 1-3, then drop anything rigid */
+const PAIRS=(function(){
+  const adj=Array.from({length:NA},()=>[]);
+  BONDS.forEach(([i,j])=>{adj[i].push(j);adj[j].push(i);});
+  const gd=Array.from({length:NA},()=>new Array(NA).fill(1e9));
+  for(let s=0;s<NA;s++){gd[s][s]=0;const q=[s];
+    for(let h=0;h<q.length;h++){const u=q[h];
+      for(const v of adj[u]) if(gd[s][v]>1e8){gd[s][v]=gd[s][u]+1;q.push(v);}}}
+  const probe=[[-60,-45],[-140,135],[60,45],[180,180],[0,0],[-75,145],[120,-120],[-90,0],[0,120],[150,-60]]
+                .map(([f,s])=>build(f,s));
+  const out=[];
+  for(let i=0;i<NA;i++) for(let j=i+1;j<NA;j++){
+    if(gd[i][j]<=2) continue;
+    let lo=1e9,hi=-1e9;
+    for(const c of probe){const d=dist(c[i],c[j]); if(d<lo)lo=d; if(d>hi)hi=d;}
+    if(hi-lo>0.02) out.push([i,j,VDW[ATOMS[i].e]+VDW[ATOMS[j].e]]);
+  }
+  return out;
+})();
+
+let F_TOUCH=0.85;
+const F_GAP=0.10;                       // severe threshold sits this far below
+const fSevere=()=>F_TOUCH-F_GAP;
+
+function sterics(p){
+  let level=0,worst=1e9,wp=null; const contacts=[];
+  for(const[i,j,vs] of PAIRS){
+    const d=dist(p[i],p[j]), fr=d/vs;
+    if(fr<worst){worst=fr; wp={i,j,d,vs,fr};}
+    if(fr<F_TOUCH){
+      const sev=fr<fSevere()?2:1;
+      if(sev>level) level=sev;
+      contacts.push({i,j,d,vs,fr,sev,limit:F_TOUCH*vs});
+    }
+  }
+  contacts.sort((a,b)=>a.fr-b.fr);
+  return {level,contacts,worst,wp};
+}
+
+/* one-time field of the worst contact fraction over a 2 degree grid */
+const STEP=2, NG=360/STEP;
+const FIELD=(function(){
+  const f=new Float32Array(NG*NG);
+  for(let a=0;a<NG;a++){
+    const phi=-180+a*STEP;
+    for(let b=0;b<NG;b++){
+      const p=build(phi,-180+b*STEP); let w=1e9;
+      for(const[i,j,vs] of PAIRS){const fr=dist(p[i],p[j])/vs; if(fr<w)w=fr;}
+      f[a*NG+b]=w;
+    }
+  }
+  return f;
+})();
+
+/* ======================================================================
+   PART 2 - state
+   ====================================================================== */
+const PRESETS=[
+  {k:'ahelix', name:'α-helix (right)',  phi:-57,  psi:-47,  short:'αR'},
+  {k:'helix310',name:'3₁₀-helix',  phi:-49,  psi:-26,  short:'3₁₀'},
+  {k:'beta',   name:'β-sheet (anti)',   phi:-139, psi:135,  short:'β'},
+  {k:'ppii',   name:'Polyproline II',        phi:-75,  psi:145,  short:'PPII'},
+  {k:'ext',    name:'Fully extended',        phi:180,  psi:180,  short:'ext'},
+  {k:'alpal',  name:'α-helix (left)',   phi:57,   psi:47,   short:'αL'},
+  {k:'ecl',    name:'Eclipsed — worst', phi:0,    psi:0,    short:'0,0'},
+];
+
+const S={
+  phi:-57, psi:-47,
+  planes:true, labels:true, arrows:true, vdw:false, hydro:true, spin:false,
+  yaw:0.62, pitch:0.30, zoom:1,
+  pos:null, st:null,
+};
+let tween=null;
+
+function setAngles(phi,psi){
+  S.phi=((phi+180)%360+360)%360-180;
+  S.psi=((psi+180)%360+360)%360-180;
+  S.pos=build(S.phi,S.psi);
+  S.st=sterics(S.pos);
+  syncUI();
+}
+
+/* ======================================================================
+   PART 3 - 3D view
+   ====================================================================== */
+const glc=document.getElementById('gl'), gx=glc.getContext('2d');
+let GW=0,GH=0,DPR=1;
+const CAMD=26;
+
+const RB=document.getElementById('rbench');
+function css(v){return getComputedStyle(RB).getPropertyValue(v).trim();}
+let TH={};
+function readTheme(){
+  TH={paper:css('--paper'),surface:css('--surface'),surf2:css('--surface-2'),
+      ink:css('--ink'),ink2:css('--ink-2'),ink3:css('--ink-3'),rule:css('--rule'),
+      accent:css('--accent'),r0:css('--r0'),r1:css('--r1'),r2:css('--r2'),r3:css('--r3'),
+      ok:css('--ok'),warn:css('--warn'),bad:css('--bad'),
+      C:css('--at-C'),N:css('--at-N'),O:css('--at-O'),H:css('--at-H'),B:css('--at-CB')};
+}
+const isDark=()=>false;   // this page is light only, matching the site
+
+function sizeGl(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  const r=glc.getBoundingClientRect();
+  GW=Math.max(320,r.width); GH=Math.max(240,r.height);
+  glc.width=GW*DPR; glc.height=GH*DPR;
+  gx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+function rotv(v){
+  const cy=Math.cos(S.yaw),sy=Math.sin(S.yaw),cp=Math.cos(S.pitch),sp=Math.sin(S.pitch);
+  const x=v[0]*cy+v[2]*sy;
+  let z=-v[0]*sy+v[2]*cy;
+  const y=v[1]*cp-z*sp;
+  z=v[1]*sp+z*cp;
+  return [x,y,z];
+}
+
+/* smoothed camera target so changing phi/psi glides instead of jumping */
+let camTgt=null;
+function focus(p){
+  const ids=[1,3,5,8,10];
+  let c=[0,0,0];
+  for(const i of ids) c=add(c,p[i]);
+  c=mul(c,1/ids.length);
+  if(!camTgt) camTgt=c;
+  else camTgt=[camTgt[0]+(c[0]-camTgt[0])*0.18,
+               camTgt[1]+(c[1]-camTgt[1])*0.18,
+               camTgt[2]+(c[2]-camTgt[2])*0.18];
+  return camTgt;
+}
+
+function shade(hex,amt){                    // amt<0 darken, >0 lighten
+  let h=hex.replace('#','');
+  if(h.length===3) h=h.split('').map(c=>c+c).join('');
+  let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  const f=t=>Math.max(0,Math.min(255,Math.round(amt<0?t*(1+amt):t+(255-t)*amt)));
+  return 'rgb('+f(r)+','+f(g)+','+f(b)+')';
+}
+function rgba(hex,a){
+  let h=hex.replace('#','');
+  if(h.length===3) h=h.split('').map(c=>c+c).join('');
+  return 'rgba('+parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+
+         parseInt(h.slice(4,6),16)+','+a+')';
+}
+
+function hull(pts){                          // monotone chain
+  if(pts.length<3) return pts;
+  const P=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[],up=[];
+  for(const p of P){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+  for(let i=P.length-1;i>=0;i--){const p=P[i];
+    while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}
+  lo.pop();up.pop();
+  return lo.concat(up);
+}
+
+let t0=performance.now();
+function drawGl(now){
+  const t=(now-t0)/1000;
+  if(S.spin){ S.yaw+=0.006; }
+  const p=S.pos, ctr=focus(p);
+  const dark=isDark();
+
+  gx.clearRect(0,0,GW,GH);
+  const bg=gx.createLinearGradient(0,0,0,GH);
+  bg.addColorStop(0, dark?shade(TH.r0,0.06):TH.surface);
+  bg.addColorStop(1, TH.r0);
+  gx.fillStyle=bg; gx.fillRect(0,0,GW,GH);
+
+  const F=Math.min(GW,GH)*2.6*S.zoom;    // ~40 px per Angstrom at default zoom
+  const cx=GW/2, cy=GH/2;
+  const cam=p.map(q=>rotv(sub(q,ctr)));
+  const proj=cam.map(q=>{
+    const zc=CAMD-q[2], s=F/zc;
+    return [cx+q[0]*s, cy-q[1]*s, zc, s];
+  });
+
+  const visible=i=>S.hydro||ATOMS[i].e!=='H';
+  const items=[];
+
+  /* peptide planes */
+  if(S.planes){
+    for(const [grp,tint] of [[PLANE_A,TH.ink3],[PLANE_B,TH.ink3]]){
+      const pts=grp.filter(visible).map(i=>[proj[i][0],proj[i][1]]);
+      if(pts.length>=3){
+        const z=grp.reduce((a,i)=>a+proj[i][2],0)/grp.length;
+        items.push({z:z+0.6,kind:'plane',pts:hull(pts),tint});
+      }
+    }
+  }
+
+  /* bonds, split at the midpoint so each half takes its atom's colour */
+  for(const [i,j] of BONDS){
+    if(!visible(i)||!visible(j)) continue;
+    const mid=[(proj[i][0]+proj[j][0])/2,(proj[i][1]+proj[j][1])/2];
+    const dbl=DOUBLE.some(([a,b])=>a===i&&b===j);
+    for(const [a,b] of [[i,j],[j,i]]){
+      const A=proj[a], M=mid;
+      items.push({z:(A[2]*3+proj[b][2])/4, kind:'bond',
+        x1:A[0],y1:A[1],x2:M[0],y2:M[1], col:TH[ATOMS[a].e],
+        w:Math.max(2.2,0.155*A[3]), dbl});
+    }
+  }
+
+  /* rotatable-bond sleeves + arrows */
+  if(S.arrows){
+    for(const [bi,bj,hue] of [[3,5,TH.accent],[5,8,TH.accent]]){
+      const A=proj[bi],B=proj[bj];
+      items.push({z:(A[2]+B[2])/2+0.25, kind:'sleeve',
+        x1:A[0],y1:A[1],x2:B[0],y2:B[1],col:hue,w:Math.max(6,0.30*A[3])});
+      // circular arrow around the bond axis, in 3D
+      const ax=norm(sub(p[bj],p[bi])), mid3=mul(add(p[bi],p[bj]),0.5);
+      let u=cross(ax,[0,0,1]); if(vlen(u)<0.2) u=cross(ax,[0,1,0]);
+      u=norm(u); const w2=cross(ax,u);
+      const ring=[];
+      for(let k=0;k<=26;k++){
+        const a=(-0.28+ k/26*1.55)*Math.PI*2/2.4;
+        const q=add(mid3, add(mul(u,Math.cos(a)*0.95), mul(w2,Math.sin(a)*0.95)));
+        const c=rotv(sub(q,ctr)); const zc=CAMD-c[2], s=F/zc;
+        ring.push([cx+c[0]*s, cy-c[1]*s, zc]);
+      }
+      items.push({z:(A[2]+B[2])/2-0.4, kind:'arc', ring, col:hue});
+    }
+  }
+
+  /* vdW shells */
+  if(S.vdw){
+    for(let i=0;i<NA;i++){
+      if(!visible(i)) continue;
+      items.push({z:proj[i][2]+0.01,kind:'shell',x:proj[i][0],y:proj[i][1],
+        r:VDW[ATOMS[i].e]*proj[i][3], col:TH[ATOMS[i].e]});
+    }
+  }
+
+  /* atoms */
+  for(let i=0;i<NA;i++){
+    if(!visible(i)) continue;
+    items.push({z:proj[i][2],kind:'atom',i,x:proj[i][0],y:proj[i][1],
+      r:Math.max(1.6,BALL[ATOMS[i].e]*proj[i][3]), col:TH[ATOMS[i].e]});
+  }
+
+  /* clash markers */
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pulse=reduce?1:0.62+0.38*Math.sin(t*3.4);
+  const shown=S.st.contacts.filter(c=>visible(c.i)&&visible(c.j)).slice(0,3);
+  for(const c of shown){
+    const A=proj[c.i],B=proj[c.j];
+    items.push({z:Math.min(A[2],B[2])-1.2, kind:'clash', c, A, B,
+      col:c.sev===2?TH.bad:TH.warn, a:pulse});
+  }
+
+  items.sort((a,b)=>b.z-a.z);
+
+  for(const it of items){
+    if(it.kind==='plane'){
+      gx.beginPath();
+      it.pts.forEach((q,k)=>k?gx.lineTo(q[0],q[1]):gx.moveTo(q[0],q[1]));
+      gx.closePath();
+      gx.fillStyle=rgba(dark?'#9fb2b0':'#6f8380', dark?0.16:0.15);
+      gx.fill();
+      gx.strokeStyle=rgba(dark?'#9fb2b0':'#5f7370',0.45);
+      gx.lineWidth=1; gx.setLineDash([4,4]); gx.stroke(); gx.setLineDash([]);
+    }
+    else if(it.kind==='bond'){
+      const dx=it.x2-it.x1, dy=it.y2-it.y1, L=Math.hypot(dx,dy)||1;
+      const nx=-dy/L*it.w/2, ny=dx/L*it.w/2;
+      const g=gx.createLinearGradient(it.x1-nx,it.y1-ny,it.x1+nx,it.y1+ny);
+      g.addColorStop(0,   shade(it.col,-0.42));
+      g.addColorStop(0.36,shade(it.col, 0.20));
+      g.addColorStop(1,   shade(it.col,-0.30));
+      gx.strokeStyle=g; gx.lineCap='round';
+      gx.lineWidth=it.dbl?it.w*0.62:it.w;
+      if(it.dbl){
+        const ox=-dy/L*it.w*0.30, oy=dx/L*it.w*0.30;
+        gx.beginPath(); gx.moveTo(it.x1+ox,it.y1+oy); gx.lineTo(it.x2+ox,it.y2+oy); gx.stroke();
+        gx.beginPath(); gx.moveTo(it.x1-ox,it.y1-oy); gx.lineTo(it.x2-ox,it.y2-oy); gx.stroke();
+      } else {
+        gx.beginPath(); gx.moveTo(it.x1,it.y1); gx.lineTo(it.x2,it.y2); gx.stroke();
+      }
+    }
+    else if(it.kind==='sleeve'){
+      gx.strokeStyle=rgba(it.col,0.22); gx.lineWidth=it.w; gx.lineCap='round';
+      gx.beginPath(); gx.moveTo(it.x1,it.y1); gx.lineTo(it.x2,it.y2); gx.stroke();
+    }
+    else if(it.kind==='arc'){
+      gx.strokeStyle=rgba(it.col,0.85); gx.lineWidth=1.9; gx.lineCap='round';
+      gx.beginPath();
+      it.ring.forEach((q,k)=>k?gx.lineTo(q[0],q[1]):gx.moveTo(q[0],q[1]));
+      gx.stroke();
+      const n=it.ring.length, a=it.ring[n-1], b=it.ring[n-3];
+      const ang=Math.atan2(a[1]-b[1],a[0]-b[0]), h=6.5;
+      gx.fillStyle=rgba(it.col,0.9);
+      gx.beginPath();
+      gx.moveTo(a[0],a[1]);
+      gx.lineTo(a[0]-h*Math.cos(ang-0.42), a[1]-h*Math.sin(ang-0.42));
+      gx.lineTo(a[0]-h*Math.cos(ang+0.42), a[1]-h*Math.sin(ang+0.42));
+      gx.closePath(); gx.fill();
+    }
+    else if(it.kind==='shell'){
+      gx.beginPath(); gx.arc(it.x,it.y,it.r,0,7);
+      gx.fillStyle=rgba(it.col,dark?0.085:0.075); gx.fill();
+      gx.strokeStyle=rgba(it.col,0.24); gx.lineWidth=1; gx.stroke();
+    }
+    else if(it.kind==='atom'){
+      const g=gx.createRadialGradient(it.x-it.r*0.36,it.y-it.r*0.40,it.r*0.08,
+                                      it.x,it.y,it.r*1.04);
+      g.addColorStop(0,   shade(it.col, 0.55));
+      g.addColorStop(0.45,shade(it.col, 0.05));
+      g.addColorStop(1,   shade(it.col,-0.48));
+      gx.beginPath(); gx.arc(it.x,it.y,it.r,0,7); gx.fillStyle=g; gx.fill();
+      gx.strokeStyle=rgba(dark?'#000000':'#2a2620',0.28); gx.lineWidth=0.7; gx.stroke();
+    }
+    else if(it.kind==='clash'){
+      gx.save();
+      gx.strokeStyle=rgba(it.col,0.55+0.4*it.a); gx.lineWidth=1.7;
+      gx.setLineDash([3.5,3.5]);
+      gx.beginPath(); gx.moveTo(it.A[0],it.A[1]); gx.lineTo(it.B[0],it.B[1]); gx.stroke();
+      gx.setLineDash([]);
+      for(const [P,ai] of [[it.A,it.c.i],[it.B,it.c.j]]){
+        const r=BALL[ATOMS[ai].e]*P[3]*1.9+3;
+        gx.beginPath(); gx.arc(P[0],P[1],r,0,7);
+        gx.strokeStyle=rgba(it.col,0.35+0.45*it.a); gx.lineWidth=2; gx.stroke();
+      }
+      const mx=(it.A[0]+it.B[0])/2, my=(it.A[1]+it.B[1])/2;
+      const txt=it.c.d.toFixed(2)+' Å';
+      gx.font='600 11px '+'ui-monospace, Menlo, Consolas, monospace';
+      const w=gx.measureText(txt).width;
+      gx.fillStyle=rgba(dark?'#0b0f11':'#ffffff',0.9);
+      gx.beginPath(); gx.roundRect?gx.roundRect(mx-w/2-4,my-8,w+8,15,4)
+                                  :gx.rect(mx-w/2-4,my-8,w+8,15);
+      gx.fill();
+      gx.strokeStyle=rgba(it.col,0.7); gx.lineWidth=1; gx.stroke();
+      gx.fillStyle=it.col; gx.textAlign='center'; gx.textBaseline='middle';
+      gx.fillText(txt,mx,my); gx.textAlign='start';
+      gx.restore();
+    }
+  }
+
+  /* atom labels last, on top */
+  if(S.labels){
+    gx.font='600 12px '+'Inter, system-ui, sans-serif';
+    gx.textBaseline='middle';
+    for(let i=0;i<NA;i++){
+      if(!visible(i)||!ATOMS[i].lbl) continue;
+      const P=proj[i], r=Math.max(1.6,BALL[ATOMS[i].e]*P[3]);
+      let ox=P[0]-cx, oy=P[1]-cy; const m=Math.hypot(ox,oy)||1;
+      const lx=P[0]+ox/m*(r+9), ly=P[1]+oy/m*(r+9);
+      gx.textAlign = ox>=0?'left':'right';
+      gx.lineWidth=3.4; gx.strokeStyle=rgba(dark?'#0f1416':'#fbfaf7',0.92);
+      gx.strokeText(ATOMS[i].lbl,lx,ly);
+      gx.fillStyle=i===7?TH.B:(i===5?TH.ink:TH.ink2);
+      gx.fillText(ATOMS[i].lbl,lx,ly);
+    }
+    gx.textAlign='start';
+  }
+
+  /* which angle each sleeve is */
+  if(S.arrows){
+    gx.font='italic 600 14px '+'Newsreader, Georgia, serif';
+    gx.textBaseline='middle'; gx.textAlign='center';
+    for(const [bi,bj,txt] of [[3,5,'φ'],[5,8,'ψ']]){
+      const A=proj[bi],B=proj[bj];
+      const mx=(A[0]+B[0])/2, my=(A[1]+B[1])/2;
+      const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1;
+      const lx=mx-dy/L*15, ly=my+dx/L*15;
+      gx.lineWidth=3.4; gx.strokeStyle=rgba(dark?'#0f1416':'#fbfaf7',0.95);
+      gx.strokeText(txt,lx,ly);
+      gx.fillStyle=TH.accent; gx.fillText(txt,lx,ly);
+    }
+    gx.textAlign='start';
+  }
+  requestAnimationFrame(drawGl);
+}
+
+/* ---- 3D pointer control ---- */
+(function(){
+  let drag=false,px=0,py=0;
+  glc.addEventListener('pointerdown',e=>{
+    drag=true;px=e.clientX;py=e.clientY;glc.classList.add('dragging');
+    glc.setPointerCapture(e.pointerId);
+  });
+  glc.addEventListener('pointermove',e=>{
+    if(!drag)return;
+    S.yaw+=(e.clientX-px)*0.010; S.pitch+=(e.clientY-py)*0.010;
+    S.pitch=Math.max(-1.45,Math.min(1.45,S.pitch));
+    px=e.clientX;py=e.clientY;
+  });
+  const stop=()=>{drag=false;glc.classList.remove('dragging');};
+  glc.addEventListener('pointerup',stop); glc.addEventListener('pointercancel',stop);
+  glc.addEventListener('wheel',e=>{
+    e.preventDefault();
+    S.zoom=Math.max(0.5,Math.min(2.6,S.zoom*(e.deltaY>0?0.93:1.075)));
+  },{passive:false});
+})();
+
+/* ======================================================================
+   PART 4 - Ramachandran plot
+   ====================================================================== */
+const rc=document.getElementById('rama'), rx=rc.getContext('2d');
+const mapCan=document.createElement('canvas'); mapCan.width=NG; mapCan.height=NG;
+const mapCtx=mapCan.getContext('2d');
+let PAD={l:56,r:14,t:14,b:44};
+const trail=[];
+
+function paintField(){
+  const img=mapCtx.createImageData(NG,NG);
+  const cols=[TH.r0,TH.r1,TH.r2,TH.r3].map(h=>{
+    let s=h.replace('#','');
+    if(s.length===3) s=s.split('').map(c=>c+c).join('');
+    return [parseInt(s.slice(0,2),16),parseInt(s.slice(2,4),16),parseInt(s.slice(4,6),16)];
+  });
+  const sev=fSevere();
+  for(let a=0;a<NG;a++){          // a -> phi
+    for(let b=0;b<NG;b++){        // b -> psi
+      const w=FIELD[a*NG+b];
+      let c;
+      if(w>=F_TOUCH+0.06) c=cols[3];
+      else if(w>=F_TOUCH) c=cols[2];
+      else if(w>=sev)     c=cols[1];
+      else                c=cols[0];
+      // row 0 of the image is the TOP = phi +180
+      const px=a, py=NG-1-b;      // x -> phi, y -> psi (inverted)
+      const oo=(py*NG+px)*4;
+      img.data[oo]=c[0]; img.data[oo+1]=c[1]; img.data[oo+2]=c[2]; img.data[oo+3]=255;
+    }
+  }
+  mapCtx.putImageData(img,0,0);
+}
+
+function sizeRama(){
+  const r=rc.parentElement.getBoundingClientRect();
+  const W=Math.max(300,r.width-28);
+  const side=W-PAD.l-PAD.r;              // both axes are angles: keep it square
+  const H=side+PAD.t+PAD.b;
+  const d=Math.min(devicePixelRatio||1,2);
+  rc.style.width=W+'px'; rc.style.height=H+'px';
+  rc.width=W*d; rc.height=H*d;
+  rx.setTransform(d,0,0,d,0,0);
+  rc._w=W; rc._h=H; rc._side=side;
+}
+
+const px2phi=(x)=>(x-PAD.l)/rc._side*360-180;
+const py2psi=(y)=>180-(y-PAD.t)/rc._side*360;
+const phi2px=(v)=>PAD.l+(v+180)/360*rc._side;
+const psi2py=(v)=>PAD.t+(180-v)/360*rc._side;
+
+function drawRama(){
+  const dark=isDark();
+  const x0=PAD.l, y0=PAD.t, pw=rc._side, ph=rc._side;
+  rx.clearRect(0,0,rc._w,rc._h);
+
+  /* field.  image x = phi index, image y = psi inverted -> matches axes */
+  rx.imageSmoothingEnabled=true;
+  rx.drawImage(mapCan,x0,y0,pw,ph);
+
+  /* grid */
+  rx.strokeStyle=rgba(dark?'#e9ede9':'#1b1813',0.13); rx.lineWidth=1;
+  rx.font='500 11px ui-monospace, Menlo, Consolas, monospace';
+  rx.fillStyle=TH.ink3;
+  for(let v=-180;v<=180;v+=60){
+    const X=phi2px(v), Y=psi2py(v);
+    rx.beginPath(); rx.moveTo(X,y0); rx.lineTo(X,y0+ph); rx.stroke();
+    rx.beginPath(); rx.moveTo(x0,Y); rx.lineTo(x0+pw,Y); rx.stroke();
+    rx.textAlign='center'; rx.textBaseline='top';
+    rx.fillText(v===0?'0':(v>0?'+'+v:''+v), X, y0+ph+7);
+    rx.textAlign='right'; rx.textBaseline='middle';
+    rx.fillText(v===0?'0':(v>0?'+'+v:''+v), x0-8, Y);
+  }
+  rx.strokeStyle=rgba(dark?'#e9ede9':'#1b1813',0.28);
+  rx.strokeRect(x0,y0,pw,ph);
+
+  /* axis titles */
+  rx.fillStyle=TH.ink2; rx.textAlign='center'; rx.textBaseline='alphabetic';
+  rx.font='italic 600 15px Newsreader, Georgia, serif';
+  rx.fillText('φ  (degrees)', x0+pw/2, rc._h-9);
+  rx.save(); rx.translate(13,y0+ph/2); rx.rotate(-Math.PI/2);
+  rx.fillText('ψ  (degrees)',0,0); rx.restore();
+
+  /* region names */
+  rx.font='italic 600 15px Newsreader, Georgia, serif';
+  rx.textAlign='center'; rx.textBaseline='middle';
+  rx.fillStyle=rgba(dark?'#f0e3c4':'#4a3a14',0.85);
+  rx.fillText('β', phi2px(-130), psi2py(140));
+  rx.fillText('α', phi2px(-72), psi2py(-40));
+  rx.fillText('α', phi2px(58), psi2py(44));
+  rx.font='600 10px Inter, system-ui, sans-serif';
+  rx.textAlign='left';
+  rx.fillText('R', phi2px(-72)+7, psi2py(-40)+5);
+  rx.fillText('L', phi2px(58)+7, psi2py(44)+5);
+
+  /* canonical points */
+  for(const q of PRESETS){
+    if(q.k==='ecl') continue;
+    const X=phi2px(q.phi), Y=psi2py(q.psi);
+    rx.beginPath(); rx.arc(X,Y,3.6,0,7);
+    rx.strokeStyle=rgba(dark?'#0c1113':'#231d0d',0.5); rx.lineWidth=1.4; rx.stroke();
+  }
+
+  /* trail */
+  if(trail.length>1){
+    for(let i=1;i<trail.length;i++){
+      const a=trail[i-1], b=trail[i];
+      if(Math.abs(a[0]-b[0])>180||Math.abs(a[1]-b[1])>180) continue;
+      rx.strokeStyle=rgba(dark?'#3cb7a8':'#0d7d74', 0.05+0.30*(i/trail.length));
+      rx.lineWidth=2; rx.lineCap='round';
+      rx.beginPath(); rx.moveTo(phi2px(a[0]),psi2py(a[1]));
+      rx.lineTo(phi2px(b[0]),psi2py(b[1])); rx.stroke();
+    }
+  }
+
+  /* marker */
+  const X=phi2px(S.phi), Y=psi2py(S.psi);
+  const sc=S.st.level===0?TH.ok:S.st.level===1?TH.warn:TH.bad;
+  rx.strokeStyle=rgba(dark?'#e9ede9':'#1b1813',0.32); rx.lineWidth=1; rx.setLineDash([3,4]);
+  rx.beginPath(); rx.moveTo(x0,Y); rx.lineTo(x0+pw,Y); rx.stroke();
+  rx.beginPath(); rx.moveTo(X,y0); rx.lineTo(X,y0+ph); rx.stroke();
+  rx.setLineDash([]);
+  rx.beginPath(); rx.arc(X,Y,10,0,7); rx.strokeStyle=sc; rx.lineWidth=2.4; rx.stroke();
+  rx.beginPath(); rx.arc(X,Y,4.6,0,7);
+  rx.fillStyle=TH.accent; rx.fill();
+  rx.strokeStyle=dark?'#0f1416':'#fbfaf7'; rx.lineWidth=1.6; rx.stroke();
+
+  /* live coordinate chip */
+  const label=(S.phi<0?'−':'+')+Math.abs(Math.round(S.phi))+'°, '+
+              (S.psi<0?'−':'+')+Math.abs(Math.round(S.psi))+'°';
+  rx.font='500 12px ui-monospace, Menlo, Consolas, monospace';
+  const tw=rx.measureText(label).width;
+  let bx=X+16, by=Y-11;
+  if(bx+tw+12>x0+pw) bx=X-16-tw-12;
+  if(by<y0+2) by=Y+11;
+  rx.fillStyle=rgba(dark?'#0f1416':'#fbfaf7',0.94);
+  rx.beginPath();
+  if(rx.roundRect) rx.roundRect(bx,by,tw+12,20,4); else rx.rect(bx,by,tw+12,20);
+  rx.fill();
+  rx.strokeStyle=rgba(dark?'#3cb7a8':'#0d7d74',0.6); rx.lineWidth=1; rx.stroke();
+  rx.fillStyle=TH.ink; rx.textAlign='left'; rx.textBaseline='middle';
+  rx.fillText(label,bx+6,by+10);
+}
+
+/* ---- plot pointer control ---- */
+(function(){
+  let drag=false;
+  const at=e=>{
+    const r=rc.getBoundingClientRect();
+    const x=e.clientX-r.left, y=e.clientY-r.top;
+    setAngles(Math.max(-180,Math.min(180,px2phi(x))),
+              Math.max(-180,Math.min(180,py2psi(y))));
+  };
+  rc.addEventListener('pointerdown',e=>{drag=true;tween=null;rc.setPointerCapture(e.pointerId);at(e);});
+  rc.addEventListener('pointermove',e=>{if(drag)at(e);});
+  const stop=()=>drag=false;
+  rc.addEventListener('pointerup',stop); rc.addEventListener('pointercancel',stop);
+})();
+
+/* ======================================================================
+   PART 5 - UI wiring
+   ====================================================================== */
+const el=id=>document.getElementById(id);
+const fmt=v=>(v<0?'−':'')+Math.abs(Math.round(v))+'°';
+
+/* presets */
+el('presets').innerHTML=PRESETS.map(q=>
+  '<button class="preset" data-k="'+q.k+'"><b>'+q.name+'</b>'+
+  '<span>φ '+fmt(q.phi)+'   ψ '+fmt(q.psi)+'</span></button>').join('');
+el('presets').addEventListener('click',e=>{
+  const b=e.target.closest('.preset'); if(!b) return;
+  const q=PRESETS.find(z=>z.k===b.dataset.k);
+  glideTo(q.phi,q.psi);
+});
+
+function glideTo(phi,psi){
+  const dphi=((phi-S.phi+540)%360)-180, dpsi=((psi-S.psi+540)%360)-180;
+  const f0=S.phi, s0=S.psi, t0g=performance.now(), dur=520;
+  tween=()=>{
+    const k=Math.min(1,(performance.now()-t0g)/dur);
+    const e=k<0.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    setAngles(f0+dphi*e, s0+dpsi*e);
+    if(k>=1) tween=null;
+  };
+}
+
+/* sliders */
+el('sPhi').addEventListener('input',e=>{tween=null;setAngles(+e.target.value,S.psi);});
+el('sPsi').addEventListener('input',e=>{tween=null;setAngles(S.phi,+e.target.value);});
+
+/* toggles */
+for(const [id,key] of [['tPlanes','planes'],['tLabels','labels'],['tArrows','arrows'],
+                       ['tVdw','vdw'],['tH','hydro'],['tSpin','spin']]){
+  el(id).addEventListener('click',()=>{
+    S[key]=!S[key]; el(id).setAttribute('aria-pressed',String(S[key]));
+  });
+}
+
+/* strictness */
+el('strict').addEventListener('input',e=>{
+  F_TOUCH=(+e.target.value)/100;
+  el('strictV').innerHTML=F_TOUCH.toFixed(2)+' × vdW';
+  paintField(); setAngles(S.phi,S.psi);
+});
+
+el('pairCount').textContent=PAIRS.length+' non-bonded pairs watched';
+
+function nearestPreset(){
+  let best=null,bd=1e9;
+  for(const q of PRESETS){
+    if(q.k==='ecl') continue;
+    const a=Math.abs(((q.phi-S.phi+540)%360)-180), b=Math.abs(((q.psi-S.psi+540)%360)-180);
+    const d=Math.hypot(a,b);
+    if(d<bd){bd=d;best=q;}
+  }
+  return {q:best,d:bd};
+}
+
+function syncUI(){
+  el('sPhi').value=Math.round(S.phi); el('sPsi').value=Math.round(S.psi);
+  el('vPhi').innerHTML=fmt(S.phi);    el('vPsi').innerHTML=fmt(S.psi);
+
+  const st=S.st, chip=el('chip');
+  chip.className='vchip '+(st.level===0?'ok':st.level===1?'warn':'bad');
+  el('chipText').textContent=st.level===0?'No clashes'
+    :st.level===1?'Strained contact':'Forbidden overlap';
+
+  const np=nearestPreset();
+  el('near').innerHTML = np.d<9
+    ? 'this is <b style="color:var(--ink)">'+np.q.name+'</b>'
+    : 'nearest named conformation: '+np.q.name+' &middot; '+Math.round(np.d)+'° away';
+
+  /* presets highlight */
+  document.querySelectorAll('.preset').forEach(b=>{
+    const q=PRESETS.find(z=>z.k===b.dataset.k);
+    const a=Math.abs(((q.phi-S.phi+540)%360)-180), c=Math.abs(((q.psi-S.psi+540)%360)-180);
+    b.setAttribute('aria-current', String(Math.hypot(a,c)<4));
+  });
+
+  /* plain-language read of the worst contact */
+  const plain=el('plain'), list=el('contacts'), none=el('noClash');
+  if(st.contacts.length===0){
+    plain.innerHTML='';
+    list.innerHTML=''; none.style.display='';
+  } else {
+    none.style.display='none';
+    const c=st.contacts[0];
+    const A=ATOMS[c.i], B=ATOMS[c.j];
+    plain.innerHTML='The tightest squeeze is between <b>'+A.d+'</b> and <b>'+B.d+
+      '</b>. Their centres are '+c.d.toFixed(2)+' Å apart, but their van der Waals '+
+      'radii add up to '+c.vs.toFixed(2)+' Å — so the two electron clouds are '+
+      Math.round((1-c.fr)*100)+'% of the way into each other.';
+    list.innerHTML=st.contacts.slice(0,5).map(c=>{
+      const frac=Math.max(0,Math.min(1,(F_TOUCH-c.fr)/(F_TOUCH-0.45)));
+      const col=c.sev===2?'var(--bad)':'var(--warn)';
+      return '<li>'+
+        '<span class="pair">'+ATOMS[c.i].n+' <em>···</em> '+ATOMS[c.j].n+'</span>'+
+        '<span class="num" style="color:'+col+'">'+c.d.toFixed(2)+' Å '+
+          '<em style="color:var(--ink-3);font-style:normal">/ '+c.limit.toFixed(2)+'</em></span>'+
+        '<span class="bar"><i style="width:'+(8+frac*92).toFixed(0)+'%;background:'+col+'"></i></span>'+
+      '</li>';
+    }).join('');
+  }
+
+  /* closest approach, always shown */
+  const wp=st.wp;
+  if(wp){
+    const pctOfSum=wp.fr*100;
+    el('cPair').innerHTML=ATOMS[wp.i].n+' <em>···</em> '+ATOMS[wp.j].n;
+    el('cNum').innerHTML='<b>'+wp.d.toFixed(2)+' Å</b>'+
+      '<span style="color:var(--ink-3)"> of '+wp.vs.toFixed(2)+' Å vdW sum</span>';
+    /* gauge runs 0.45 (deep overlap) .. 1.05 (well clear) */
+    const g=x=>Math.max(0,Math.min(1,(x-0.45)/0.60));
+    el('cBar').style.width=(g(wp.fr)*100).toFixed(1)+'%';
+    el('cBar').style.background=st.level===0?'var(--ok)':st.level===1?'var(--warn)':'var(--bad)';
+    el('cTick').style.left=(g(F_TOUCH)*100).toFixed(1)+'%';
+    el('cWhy').textContent = st.level===0
+      ? 'Sitting at '+Math.round(pctOfSum)+'% of the van der Waals sum — clear of the '
+        +Math.round(F_TOUCH*100)+'% contact line, so nothing is being squeezed.'
+      : 'Inside the '+Math.round(F_TOUCH*100)+'% contact line, so these two atoms are '
+        +'pressing into one another: '+ATOMS[wp.i].d+' against '+ATOMS[wp.j].d+'.';
+  }
+
+  /* trail */
+  const last=trail[trail.length-1];
+  if(!last||Math.abs(last[0]-S.phi)>1.2||Math.abs(last[1]-S.psi)>1.2){
+    trail.push([S.phi,S.psi]);
+    if(trail.length>90) trail.shift();
+  }
+}
+
+/* keyboard nudges anywhere on the page */
+addEventListener('keydown',e=>{
+  if(/^(INPUT|TEXTAREA|BUTTON)$/.test(document.activeElement.tagName)) return;
+  const k=e.shiftKey?15:5;
+  if(e.key==='ArrowLeft'){setAngles(S.phi-k,S.psi);e.preventDefault();}
+  if(e.key==='ArrowRight'){setAngles(S.phi+k,S.psi);e.preventDefault();}
+  if(e.key==='ArrowUp'){setAngles(S.phi,S.psi+k);e.preventDefault();}
+  if(e.key==='ArrowDown'){setAngles(S.phi,S.psi-k);e.preventDefault();}
+});
+
+/* ======================================================================
+   PART 6 - boot
+   ====================================================================== */
+function relayout(){ readTheme(); sizeGl(); sizeRama(); paintField(); }
+addEventListener('resize',relayout);
+
+readTheme();
+sizeGl(); sizeRama(); paintField();
+setAngles(-57,-47);
+
+/* the plot only needs redrawing when something changes, but a single loop
+   keeps the clash pulse and the spin in step with the 3D view */
+function frame(now){
+  if(tween) tween();
+  drawRama();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(drawGl);
+requestAnimationFrame(frame);
+
+/* fonts can land after first paint and change metrics */
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relayout);
+
+</script>
+</body>
+</html>
